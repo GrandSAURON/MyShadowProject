@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">MyShadow</string>
+    <string name="List">Список</string>
+    <string name="Tile">Плитка</string>
+    <string name="Card">Карточки</string>
+    <string name="action_settings">Settings</string>
+    <string name="camerashotbutton">CameraShotButton</string>
+    <string name="camera_shot">Camera_shot</string>
+    <string name="time_change">Time_change</string>
+    <string name="camera_video_shooting">Camera_video_shooting</string>
+    <string name="photo">Photo</string>
+    <string name="video">Video</string>
+    <string name="TaskHint">Создание новой задачи для выполнения</string>
+    <string name="TaskHint1">Добавление фотографий или видео</string>
+    <string name="editdetailat">EditDetailActivity</string>
+    <string name="galactivity">GalleryActivity</string>
+    <string name="adddoc">AddNewDocumentsMode</string>
+    <string name="addphoto">PhotoShooting</string>
+    <string name="aboutactiv">AboutActivity</string>
+    <string name="setact">SettingsActivity</string>
+    <string name="gatesact">GatesOpenActivity</string>
+</resources>

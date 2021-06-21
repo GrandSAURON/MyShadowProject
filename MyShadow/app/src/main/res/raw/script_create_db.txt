@@ -1,0 +1,635 @@
+CREATE TABLE DB_INFO
+(
+	ID                   INTEGER NOT NULL,
+	NAME                 VARCHAR2(100) NOT NULL ,
+	VALUE                VARCHAR2(250) NOT NULL ,
+	NOTE                 VARCHAR2(2000),
+	PRIMARY KEY (ID)
+);
+
+CREATE TABLE TYPE_STATE
+(
+	ID                   INTEGER NOT NULL,
+	NAME                 VARCHAR(50) NOT NULL,
+	PRIMARY KEY (ID)
+);
+
+CREATE UNIQUE INDEX XPKTYPE_STATE ON TYPE_STATE
+(
+	ID
+);
+
+CREATE UNIQUE INDEX XAK1TYPE_STATE ON TYPE_STATE
+(
+	NAME
+);
+
+CREATE TABLE MH_OBJECT
+(
+	ID                   INTEGER PRIMARY KEY AUTOINCREMENT,
+	TYPE_STATE_ID        INTEGER NOT NULL DEFAULT 1,
+	GUID                 VARCHAR(32) NOT NULL,
+	NAME                 VARCHAR(250),
+	CLASS_ID             INTEGER NOT NULL,
+	FOREIGN KEY (TYPE_STATE_ID) REFERENCES TYPE_STATE (ID)
+);
+
+CREATE UNIQUE INDEX XAK1MH_OBJECT ON MH_OBJECT
+(
+	GUID
+);
+
+
+
+CREATE TABLE USER
+(
+	ID                   INTEGER PRIMARY KEY,
+	NICKNAME             VARCHAR(50),
+	NAME                 VARCHAR(80),
+	LASTNAME             VARCHAR(80),
+	SURNAME              VARCHAR(80),
+	FOREIGN KEY (ID) REFERENCES MH_OBJECT (ID) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX XAK1USERS ON USER
+(
+	NICKNAME
+);
+
+CREATE TABLE LOCATION
+(
+	ID                   INTEGER PRIMARY KEY,
+	NAME                 VARCHAR(150) NOT NULL,
+	FOREIGN KEY (ID) REFERENCES MH_OBJECT (ID) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX XAK1LOCATION ON LOCATION
+(
+	NAME
+);
+
+CREATE TABLE TYPE_TASK
+(
+	ID                   INTEGER NOT NULL,
+	NAME                 VARCHAR(50) NOT NULL,
+	PRIMARY KEY (ID)
+);
+
+CREATE UNIQUE INDEX XPKTYPE_TASK ON TYPE_TASK
+(
+	ID
+);
+
+CREATE UNIQUE INDEX XAK1TYPE_TASK ON TYPE_TASK
+(
+	NAME
+);
+
+CREATE TABLE TASK
+(
+	ID                   INTEGER PRIMARY KEY,
+	SENDER_ID            INTEGER NOT NULL,
+    RECEIVER_ID          INTEGER NOT NULL,
+	LOCATION_ID          INTEGER,
+	TYPE_STATE_ID        INTEGER NOT NULL DEFAULT 1,
+	TYPE_TASK_ID         INTEGER NOT NULL,
+	CREATE_TIME          DATETIME NOT NULL DEFAULT (datetime('now', 'localtime')),
+	START_TIME           DATE,
+	END_TIME             DATE,
+	LAST_DATE            DATE,
+	PRIORITET            INTEGER NOT NULL,
+	PERCENT_COMP         INTEGER NOT NULL DEFAULT 0 CHECK ( PERCENT_COMP >= 0 AND PERCENT_COMP <= 100),
+	NOTE                 VARCHAR(2000),
+	FOREIGN KEY (ID) REFERENCES MH_OBJECT (ID) ON DELETE CASCADE,
+	FOREIGN KEY (LOCATION_ID) REFERENCES LOCATION (ID),
+	FOREIGN KEY (TYPE_STATE_ID) REFERENCES TYPE_STATE (ID),
+	FOREIGN KEY (SENDER_ID) REFERENCES USER (ID),
+	FOREIGN KEY (RECEIVER_ID) REFERENCES USER (ID),
+	FOREIGN KEY (TYPE_TASK_ID) REFERENCES TYPE_TASK (ID)
+);
+
+CREATE TABLE TYPE_DOC
+(
+	ID                   INTEGER NOT NULL,
+	NAME                 VARCHAR(60),
+	MIME_TYPE            VARCHAR2(100) NOT NULL,
+        EXTENSION            VARCHAR2(20) NOT NULL,
+	PRIMARY KEY (ID)
+);
+
+CREATE TABLE DOCUMENT
+(
+	ID                   INTEGER PRIMARY KEY,
+	FILE_NAME            VARCHAR(255) NOT NULL,
+        TASK_ID              INTEGER NOT NULL,
+	TYPE_DOC_ID          INTEGER,
+	FOREIGN KEY (ID) REFERENCES MH_OBJECT (ID) ON DELETE CASCADE,
+	FOREIGN KEY (TASK_ID) REFERENCES TASK (ID) ON DELETE CASCADE,
+	FOREIGN KEY (TYPE_DOC_ID) REFERENCES TYPE_DOC (ID)
+);
+
+CREATE UNIQUE INDEX XAK1DOCUMENT ON DOCUMENT
+(
+	TASK_ID,
+	FILE_NAME
+);
+
+CREATE TABLE HISTORY_STATE
+(
+	ID                   INTEGER PRIMARY KEY AUTOINCREMENT,
+	OBJECT_ID            INTEGER NOT NULL,
+	STATE_ID             INTEGER NOT NULL,
+	USER_ID              INTEGER NOT NULL,
+	DATE_STATE           DATE NOT NULL,
+	FOREIGN KEY (STATE_ID) REFERENCES TYPE_STATE (ID),
+	FOREIGN KEY (OBJECT_ID) REFERENCES MH_OBJECT (ID) ON DELETE CASCADE,
+	FOREIGN KEY (USER_ID) REFERENCES USER (ID)
+);
+
+CREATE UNIQUE INDEX XAK1HISTORY_STATE ON HISTORY_STATE
+(
+	OBJECT_ID,
+	STATE_ID,
+	USER_ID,
+	DATE_STATE
+);
+
+
+CREATE TABLE LOG_SEND_DATA
+(
+	ID                   INTEGER PRIMARY KEY AUTOINCREMENT,
+	OBJECT_ID            INTEGER NOT NULL,
+	DATE_SEND            DATETIME NOT NULL DEFAULT (datetime('now', 'localtime')),
+	FOREIGN KEY (OBJECT_ID) REFERENCES MH_OBJECT (ID)
+);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (1, 'Short name', 'Me and my shadow', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (2, 'Full name', 'Me and my shadow', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (3, 'Appointment', 'Object-oriented technology for rapid development of information systems', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (4, 'Copyright notice', 'Copyright © 2020 - 2021 by RAS Technologies', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (5, 'Developers', 'Alex Romasenko', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (6, 'Date of creation', '14.04.2021', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (7, 'DB VERSION', '210425', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (1000, 'Main host name', '', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (1001, 'User name', '', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (1002, 'User pass', '', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (1003, 'Data auto send mode', '0', null);
+
+INSERT INTO DB_INFO (ID, NAME, VALUE, NOTE)
+VALUES (1004, 'Gates telephone', '', null);
+
+
+INSERT INTO TYPE_STATE (ID, NAME)
+VALUES (1, 'Создан');
+
+INSERT INTO TYPE_STATE (ID, NAME)
+VALUES (2, 'Удален');
+
+INSERT INTO TYPE_STATE (ID, NAME)
+VALUES (3, 'Архив');
+
+INSERT INTO TYPE_STATE (ID, NAME)
+VALUES (4, 'Активен');
+
+INSERT INTO TYPE_STATE (ID, NAME)
+VALUES (300, 'Принята к исполнению');
+
+INSERT INTO TYPE_STATE (ID, NAME)
+VALUES (302, 'Исполняется');
+
+INSERT INTO TYPE_STATE (ID, NAME)
+VALUES (304, 'Выполнена');
+
+INSERT INTO TYPE_STATE(ID, NAME)
+VALUES (307, 'Отправлена исполнителю');
+
+
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (1, 'application/acad', 'AutoCAD Drawing files', 'dwg');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (2, 'application/arj', 'Arj', 'arj');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (3, 'application/dxf', 'DXF (AutoCAD)', 'dxf');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (4, 'application/excel', 'Microsoft Excel', 'xl');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (5, 'application/iges', 'IGES graphics format', 'igs');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (6, 'application/msword', 'Microsoft Word', 'doc');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (7, 'application/mswrite', 'Microsoft Write', 'wri');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (8, 'application/octet-stream', 'Uninterpreted binary', 'bin');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (9, 'application/pdf', 'PDF (Adobe Acrobat)', 'pdf');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (10, 'application/rtf', 'Rich Text Format', 'rtf');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (11, 'application/x-director', 'Macromedia Director', 'dir');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (12, 'application/x-csh', 'C-shell script', 'csh');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (13, 'application/x-dvi', 'TeX DVI', 'dvi');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (14, 'application/x-gzip', 'GNU Zip', 'gz');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (15, 'application/x-sh', 'Bourne shell script', 'sh');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (16, 'application/x-wais-source', 'WAIS source', 'src');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (17, 'application/x-gtar', 'GNU tar', 'gtar');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (18, 'application/zip', 'ZIP archive', 'zip');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (19, 'audio/basic', 'Basic audio (usually  -law)', 'au');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (20, 'audio/x-aiff', 'AIFF audio', 'aif');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (21, 'audio/x-wav', 'Windows WAVE audio', 'wav');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (22, 'image/gif', 'gif image', 'gif');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (23, 'image/jpeg', 'JPEG image', 'jpg');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (24, 'image/x-cmu-raster', 'CMU raster', 'ras');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (25, 'image/x-rgb', 'RGB Image', 'rgb');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (26, 'multipart/x-zip', 'PKZIP Archive', 'zip');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (27, 'text/html', 'HTML', 'html');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (28, 'text/plain', 'Plain text', 'txt');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (29, 'video/mpeg', 'MPEG video', 'mpeg');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (30, 'video/quicktime', 'QuickTime Video', 'mov');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (31, 'video/msvideo', 'Microsoft Windows Video', 'avi');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (32, 'video/x-sgi-movie', 'SGI Movieplayer format', 'movie');
+
+INSERT  INTO  TYPE_DOC (ID, MIME_TYPE, NAME, EXTENSION)
+VALUES  (33, 'audio/mp4', 'MP 4', 'mp4');
+
+
+INSERT INTO TYPE_TASK (ID, NAME)
+VALUES (1, 'Дорожные работы');
+
+INSERT INTO TYPE_TASK (ID, NAME)
+VALUES (2, 'Электромонтажные работы');
+
+INSERT INTO TYPE_TASK (ID, NAME)
+VALUES (3, 'Технические работы');
+
+INSERT INTO TYPE_TASK (ID, NAME)
+VALUES (4, 'Инфраструктурные работы');
+
+INSERT INTO TYPE_TASK (ID, NAME)
+VALUES (5, 'Другие виды работ');
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'Сергей', 5, 1, '8498e502a54347e7ab0bbfeb6c63750b' );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'Алексей', 5, 1, 'e689b9c72440462c97a9c247ff858caf' );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'Саша', 5, 1, 'bdd0655286234da59cab90f6898ab9d6' );
+
+INSERT INTO USER (ID, NICKNAME, NAME)
+VALUES ((select id from MH_OBJECT where GUID = '8498e502a54347e7ab0bbfeb6c63750b' ), 'Сергей', 'Сергей');
+
+INSERT INTO USER (ID, NICKNAME, NAME, SURNAME)
+VALUES ((select id from MH_OBJECT where GUID = 'e689b9c72440462c97a9c247ff858caf' ), 'Алексей', 'Алексей', 'Ермаков');
+
+INSERT INTO USER (ID, NICKNAME, NAME, LASTNAME, SURNAME)
+VALUES ((select id from MH_OBJECT where GUID = 'bdd0655286234da59cab90f6898ab9d6' ), 'Саша', 'Александр', 'Сергеевич', 'Ромасенко');
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( '', 7, 1, '97c6d3c347324a3a8515f930c1b426d8' );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( '', 7, 1, 'c86b547d006c4f16b4e6215ec130009e' );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( '', 7, 1, '2fabf86030e24ed58a682f43f8b1177b' );
+
+INSERT INTO LOCATION (ID, NAME)
+VALUES ((select id from MH_OBJECT where GUID = '97c6d3c347324a3a8515f930c1b426d8' ), 'Пруд');
+
+INSERT INTO LOCATION (ID, NAME)
+VALUES ((select id from MH_OBJECT where GUID = 'c86b547d006c4f16b4e6215ec130009e' ), 'Столб 23');
+
+INSERT INTO LOCATION (ID, NAME)
+VALUES ((select id from MH_OBJECT where GUID = '2fabf86030e24ed58a682f43f8b1177b' ), 'Серверная');
+
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'Повесить камеру', 1, 1, 'a16c1daefa3343c2b448d8001bfabe86' );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'Настроить сервер', 1, 1, '56778f92abcf4c9ea224ef3ce518bb6c' );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'Открыть плотину', 1, 1, '9c8b2a31963540469aed30e67cdd9646' );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'Поменять лампочку', 1, 1, 'a7bc6365220840fd8959d212d30239f8' );
+
+INSERT INTO TASK ( ID, SENDER_ID, RECEIVER_ID, LOCATION_ID, TYPE_STATE_ID, TYPE_TASK_ID, CREATE_TIME, PRIORITET, NOTE)
+VALUES ( (select id from MH_OBJECT where GUID = 'a16c1daefa3343c2b448d8001bfabe86' ),
+         (select id from MH_OBJECT where GUID = 'bdd0655286234da59cab90f6898ab9d6' ),
+         (select id from MH_OBJECT where GUID = '8498e502a54347e7ab0bbfeb6c63750b' ),
+         (select id from MH_OBJECT where GUID = 'c86b547d006c4f16b4e6215ec130009e' ),
+          1, 4, '27.04.2021', 1, 'Повесить камеру Bosh используя современное оборудование и качественный провод');
+
+INSERT INTO TASK ( ID, SENDER_ID, RECEIVER_ID, LOCATION_ID, TYPE_STATE_ID, TYPE_TASK_ID, CREATE_TIME, PRIORITET, NOTE)
+VALUES ( (select id from MH_OBJECT where GUID = '56778f92abcf4c9ea224ef3ce518bb6c' ),
+         (select id from MH_OBJECT where GUID = 'bdd0655286234da59cab90f6898ab9d6' ),
+          (select id from MH_OBJECT where GUID = 'e689b9c72440462c97a9c247ff858caf' ),
+          (select id from MH_OBJECT where GUID = '2fabf86030e24ed58a682f43f8b1177b' ),
+          1, 4, '27.04.2021', 2, 'Установить операционную систему, поставить необходимые программы');
+
+INSERT INTO TASK ( ID, SENDER_ID, RECEIVER_ID, LOCATION_ID, TYPE_STATE_ID, TYPE_TASK_ID, CREATE_TIME, PRIORITET, NOTE)
+VALUES ( (select id from MH_OBJECT where GUID = '9c8b2a31963540469aed30e67cdd9646' ),
+         (select id from MH_OBJECT where GUID = 'bdd0655286234da59cab90f6898ab9d6' ),
+          (select id from MH_OBJECT where GUID = '8498e502a54347e7ab0bbfeb6c63750b' ),
+          (select id from MH_OBJECT where GUID = '97c6d3c347324a3a8515f930c1b426d8' ),
+          1, 5, '27.04.2021', 3, 'Открыть водосток под мостом');
+
+INSERT INTO TASK ( ID, SENDER_ID, RECEIVER_ID, LOCATION_ID, TYPE_STATE_ID, TYPE_TASK_ID, CREATE_TIME, PRIORITET, NOTE )
+VALUES ( (select id from MH_OBJECT where GUID = 'a7bc6365220840fd8959d212d30239f8' ),
+          (select id from MH_OBJECT where GUID = 'bdd0655286234da59cab90f6898ab9d6' ),
+          (select id from MH_OBJECT where GUID = 'e689b9c72440462c97a9c247ff858caf' ),
+          (select id from MH_OBJECT where GUID = 'c86b547d006c4f16b4e6215ec130009e' ),
+          1, 2, '27.04.2021', 4, 'Поменять лампочку, заодно посмотреть качество проводов');
+
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp1.jpg', 2, 1, '5493d833a00746d1ba04c526ee4ee950' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = '5493d833a00746d1ba04c526ee4ee950' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp1.jpg',
+	     (select id from MH_OBJECT where GUID = 'a7bc6365220840fd8959d212d30239f8' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp2.jpg', 2, 1, 'a65931f53cea4a61809c5bbd5b213b76' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = 'a65931f53cea4a61809c5bbd5b213b76' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp2.jpg',
+	     (select id from MH_OBJECT where GUID = 'a7bc6365220840fd8959d212d30239f8' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp3.jpg', 2, 1, '88a5a707b72f4d039c7d27718ec3e487' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = '88a5a707b72f4d039c7d27718ec3e487' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp3.jpg',
+	     (select id from MH_OBJECT where GUID = 'a7bc6365220840fd8959d212d30239f8' )
+	   );
+
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp4.jpg', 2, 1, '0e023a128c9441d7a847ec85b44c7e88' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = '0e023a128c9441d7a847ec85b44c7e88' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp4.jpg',
+	     (select id from MH_OBJECT where GUID = 'a16c1daefa3343c2b448d8001bfabe86' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp5.jpg', 2, 1, '3117b85d8f8546e092983798f6300acd' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = '3117b85d8f8546e092983798f6300acd' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp5.jpg',
+	     (select id from MH_OBJECT where GUID = 'a16c1daefa3343c2b448d8001bfabe86' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp6.jpg', 2, 1, 'ba45946e37d541c1a9b9b4f12c596231' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = 'ba45946e37d541c1a9b9b4f12c596231' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp6.jpg',
+	     (select id from MH_OBJECT where GUID = 'a16c1daefa3343c2b448d8001bfabe86' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp7.jpg', 2, 1, 'e67d41419e1a459b8472900cc15577a9' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = 'e67d41419e1a459b8472900cc15577a9' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp7.jpg',
+	     (select id from MH_OBJECT where GUID = '56778f92abcf4c9ea224ef3ce518bb6c' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp8.jpg', 2, 1, 'b04d7ee4127c4e6ba08a0338ccc6902a' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = 'b04d7ee4127c4e6ba08a0338ccc6902a' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp8.jpg',
+	     (select id from MH_OBJECT where GUID = '56778f92abcf4c9ea224ef3ce518bb6c' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp9.jpg', 2, 1, '577b37ee61e147258df3f99f67681667' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = '577b37ee61e147258df3f99f67681667' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp9.jpg',
+	     (select id from MH_OBJECT where GUID = '56778f92abcf4c9ea224ef3ce518bb6c' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp10.jpg', 2, 1, 'dc1ce734200945bb9a2fd5310e29186b' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = 'dc1ce734200945bb9a2fd5310e29186b' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp10.jpg',
+	     (select id from MH_OBJECT where GUID = '9c8b2a31963540469aed30e67cdd9646' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp11.jpg', 2, 1, '788e9937f943436c9ab327f5138584ce' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = '788e9937f943436c9ab327f5138584ce' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp11.jpg',
+	     (select id from MH_OBJECT where GUID = '9c8b2a31963540469aed30e67cdd9646' )
+	   );
+
+INSERT INTO MH_OBJECT ( NAME, CLASS_ID, TYPE_STATE_ID, GUID )
+VALUES ( 'temp12.jpg', 2, 1, 'e5441338632943e481755a9c8e753aeb' );
+INSERT INTO document ( id, file_name, task_id )
+VALUES (
+         (select id from MH_OBJECT where GUID = 'e5441338632943e481755a9c8e753aeb' ),
+		'/data/data/srcapp.myshadow.ui/app_imageDir/temp12.jpg',
+	     (select id from MH_OBJECT where GUID = '9c8b2a31963540469aed30e67cdd9646' )
+	   );
+
+
+create view dpr$_task_obj as
+  select
+    o.id as id,
+    o.type_state_id AS type_state_id$,
+    o.class_id as class_id$,
+    tk.sender_id as sender_id$,
+    tk.receiver_id as receiver_id$,
+    tk.location_id as location_id$,
+    tk.type_task_id as type_task_id$,
+    o.guid as guid,
+    o.name as name,
+    ts.name as ts_name,
+    (select name from location where id = tk.location_id) as location_name,
+    (select name from user where id = tk.sender_id) as sender_name,
+    (select name from user where id = tk.receiver_id) as receiver_name,
+    (select name from type_task where id = tk.type_task_id) as type_task_name,
+    tk.create_time as create_time,
+    tk.start_time as start_time,
+    tk.end_time as end_time,
+    tk.last_date as last_date,
+    tk.percent_comp as percent_comp,
+    tk.prioritet as prioritet,
+    tk.note as note
+  from
+    type_state ts,
+    mh_object o,
+    task tk
+  where
+    o.id = tk.id AND
+    ts.id = o.type_state_id;
+
+create  view dpr$_document as
+  select
+    o.id as id,
+    o.type_state_id AS type_state_id$,
+    o.class_id as class_id$,
+    doc.type_doc_id as type_doc_id$,
+    doc.task_id as task_id$,
+    ts.name as ts_name,
+    o.guid as guid,
+    o.name as name,
+    ts.name as ts_name,
+    doc.file_name as file_name
+  from
+    type_state ts,
+    mh_object o,
+    document doc
+  where
+    o.id = doc.id AND
+    ts.id = o.type_state_id;
+
+create  view dpr$_user as
+  select
+    o.id as id,
+    o.type_state_id AS type_state_id$,
+    o.class_id as class_id$,
+    o.guid as guid,
+    ts.name as ts_name,
+    o.name as name,
+    ts.name as ts_name,
+    u.nickname as nickname,
+    u.name as firstname,
+    u.lastname as lastname,
+    u.surname as surname
+  from
+    type_state ts,
+    mh_object o,
+    user u
+  where
+    o.id = u.id AND
+    ts.id = o.type_state_id;
+
+create  view dpr$_location as
+  select
+    o.id as id,
+    o.type_state_id AS type_state_id$,
+    o.class_id as class_id$,
+    ts.name as ts_name,
+    o.guid as guid,
+    o.name as name,
+    loc.name as loc_name
+  from
+    type_state ts,
+    mh_object o,
+    location loc
+  where
+    o.id = loc.id AND
+    ts.id = o.type_state_id;
+
+create  view dpr$_type_task as
+  select
+    tk.id as id,
+    tk.name as name
+  from
+    type_task tk;
+
+create  view dpr$_type_state as
+  select
+    ts.id as id,
+    ts.name as name
+  from
+    type_state ts;
+
+

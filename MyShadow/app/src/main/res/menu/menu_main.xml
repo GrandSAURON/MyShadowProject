@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_helpers"
+        android:capitalize="none"
+        android:icon="@drawable/ic_baseline_engineering_24"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menu_send"
+        android:icon="@android:drawable/ic_menu_send"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menuPurchasesListNewRecord"
+        android:icon="@android:drawable/ic_menu_preferences"
+        app:showAsAction="always|withText" />
+
+    <item
+        android:id="@+id/menu_publish"
+        android:capitalize="none"
+        android:icon="@android:drawable/ic_menu_info_details"
+        app:showAsAction="always" />
+</menu>
